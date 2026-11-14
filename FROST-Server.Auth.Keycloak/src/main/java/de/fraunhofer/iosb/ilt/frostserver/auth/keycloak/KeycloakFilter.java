@@ -22,6 +22,7 @@ import static de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings.TAG_AUTHE
 import static de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings.TAG_AUTH_ALLOW_ANON_READ;
 import static de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings.TAG_AUTH_ROLE_ADMIN;
 import static de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings.TAG_CORE_SETTINGS;
+import static de.fraunhofer.iosb.ilt.frostserver.util.HttpMethod.OPTIONS;
 
 import de.fraunhofer.iosb.ilt.frostserver.settings.CoreSettings;
 import de.fraunhofer.iosb.ilt.frostserver.util.AuthUtils;
@@ -110,13 +111,10 @@ public class KeycloakFilter implements Filter {
         // so with authenticateOnly-only semantics; the mapper exists so the path
         // lookup succeeds (roles are enforced by the persistence layer).
         final Utils.MethodRoleMapper roleMapperMcp = (HttpMethod method) -> {
-            switch (method) {
-                case OPTIONS:
-                    return Role.NONE;
-
-                default:
-                    return Role.READ;
+            if (method == OPTIONS) {
+                return Role.NONE;
             }
+            return Role.READ;
         };
         roleMappersByPath.put("/mcp", roleMapperMcp);
         final Utils.MethodRoleMapper roleMapperSta = (HttpMethod method) -> {
